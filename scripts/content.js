@@ -1,10 +1,8 @@
 const wikipediaRegex = /^https?:\/\/([a-z]+\.)?wikipedia\.org/i;
 const fandomRegex = /^https?:\/\/([a-z]+\.)?fandom\.com/i;
 
-function handleWikipedia() {
+function handleWikipedia(selectedDate) {
 	var title = getPageTitle();
-
-	console.log('title', title);
 
 	// On some pages (like the main page), we don't want to redirect.
 	if (isNonRedirectPage(title)) {
@@ -21,23 +19,20 @@ function handleWikipedia() {
 		return;
 	}
 	
-	
-	const date = "2015-02-19T00:00:00Z"; // Format: YYYY-MM-DDTHH:MM:SSZ
-	const apiUrl = "https://en.wikipedia.org/w/api.php";
-	
-	const queryUrl = `${apiUrl}?action=query&format=json&prop=revisions&titles=${title}&rvstart=${date}`
+	var formattedSelectedDate = formatSelectedDate(selectedDate);
 
-	console.log(queryUrl);
+	const apiUrl = "https://en.wikipedia.org/w/api.php";
+	const queryUrl = `${apiUrl}?action=query&format=json&prop=revisions&titles=${title}&rvstart=${formattedSelectedDate}`
 
 	fetch(queryUrl)
 		.then((response) => response.json())
 		.then((data) => {
-			console.log(data);
 			pages = data.query.pages;
 			page_id = Object.keys(pages)[0];
 
+			// If the page didn't exist on that date, we'll just show the live page.
 			if (!('revisions' in pages[page_id])) {
-				return handleNonExistentPage(title, date);
+				return handleNonExistentPage(title, selectedDate);
 			}
 
 			revision_id = pages[page_id].revisions[0].revid;
@@ -76,6 +71,13 @@ function isNonRedirectPage(title) {
 	return false;
 }
 
+// Check if the user is already on an old revision.
+function isAlreadyOldWiki() {
+	const oldWikiRegex = /oldid=\d+/;	
+	return oldWikiRegex.test(window.location.href);
+}
+
+// Get the query params from the URL.
 function getQueryParams() {
 	const params = {};
 	const queryString = window.location.search.substring(1);
@@ -110,15 +112,6 @@ function handleLandOnOldWiki(title) {
 	
 		divElement.prepend(newElement);
 	});
-
-	
-	
-}
-
-// Check if the user is already on an old revision
-function isAlreadyOldWiki() {
-	const oldWikiRegex = /oldid=\d+/;	
-	return oldWikiRegex.test(window.location.href);
 }
 
 function handleNonExistentPage(title, date) {
@@ -129,7 +122,7 @@ function handleNonExistentPage(title, date) {
 		const divElement = document.getElementById('bodyContent');
 		const newElement = document.createElement('p');
 		
-		var message = '<b style="color:red;"><i>Wiki Date Lock:</i> The page did not exist on the specified date. Currently showing live page.</b>'
+		var message = `<b style="color:red;"><i>Wiki Date Lock:</i> The page did not exist on the specified date (${date}). Currently showing live page.</b>`
 
 		newElement.innerHTML = message;
 	
@@ -137,21 +130,23 @@ function handleNonExistentPage(title, date) {
 	});
 }
 
-function handleFandom() {
-	alert("You're on Fandom!");
-}
-
 function getPageTitle() {
 	query_title = getQueryParams().title;
-	console.log('query_title', query_title);
 
+	// If the title is given in the query params, use that.
 	if (query_title) {
 		return query_title;
 	}
 
+	// Otherwise get the title from the URL.
 	var title = window.location.href.split("/").pop();
-	title = title.split("#")[0]; // Remove anchor
-	return title;
+	return title.split("#")[0]; // Remove anchor
+}
+
+// Format the date to be in the format that Wikipedia expects.
+// YYYY-MM-DDTHH:MM:SSZ
+function formatSelectedDate(selectedDate) {
+	return selectedDate + 'T00:00:00Z'; 
 }
 
 function redirectToRevision(title, revision_id) {
@@ -165,12 +160,22 @@ function isRedirectPrevented() {
 	return getQueryParams().wiki_date_lock_prevent_redirect;
 }
 
+function handleFandom() {
+	alert("You're on Fandom!");
+}
+
 function main() {
-	if (wikipediaRegex.test(window.location.href)) {
-		handleWikipedia();
-	} else if (fandomRegex.test(window.location.href)) {
-		handleFandom();
-	}
+	chrome.storage.sync.get('selectedDate', (result) => {
+		var selectedDate = result.selectedDate;
+
+		if (wikipediaRegex.test(window.location.href)) {
+			handleWikipedia(selectedDate);
+		} else if (fandomRegex.test(window.location.href)) {
+			handleFandom(selectedDate);
+		}
+	});
+	
+	
 }
 
 

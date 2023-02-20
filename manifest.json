@@ -2,7 +2,6 @@
 	"manifest_version": 3,
 	"name": "Wiki Date Lock",
 	"version": "1.0",
-	"permissions": ["storage"],
 	"description": "Redirect users to the older version of the current Wikipedia page, which is not later than the date specified by the user.",
 	"content_scripts": [
 		{
@@ -10,5 +9,9 @@
 			"js": ["scripts/content.js"],
 			"run_at": "document_start"
 		}
-	]
+	],
+	"action": {
+		"default_popup": "popup.html"
+	},
+	"permissions": ["activeTab", "tabGroups", "storage"]
 }
