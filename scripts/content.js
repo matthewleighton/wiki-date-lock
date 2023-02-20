@@ -221,11 +221,28 @@ function handleFandom(selectedDate) {
 }
 
 function main() {
-	chrome.storage.sync.get('selectedDate', (result) => {
-		var selectedDate = result.selectedDate;
+	
+	const promise = new Promise((resolve, reject) => {
+		chrome.storage.sync.get('selectedDate', (result1) => {
+			chrome.storage.sync.get('lockEnabled', (result2) => {
 
-		// If the user hasn't selected a date, don't do anything.
-		if (!selectedDate) {
+				const results = {
+					selectedDate: result1.selectedDate,
+					lockEnabled: result2.lockEnabled
+				}
+
+				resolve(results);
+			});
+		});
+	});
+
+	promise.then((results) => {
+		const selectedDate = results.selectedDate;
+		const lockEnabled = results.lockEnabled;
+		
+
+		// If the lock is not enabled, or a date hasn't been selected, don't do anything.
+		if (!selectedDate || !lockEnabled) {
 			return
 		}
 
@@ -235,6 +252,8 @@ function main() {
 			handleFandom(selectedDate);
 		}
 	});
+	
+
 	
 	
 }

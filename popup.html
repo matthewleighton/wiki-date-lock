@@ -2,10 +2,48 @@
 <html>
 	<head>
 		<title>Wiki Date Lock</title>
+		<style>
+			body {
+				width: 300px;
+				height: 175px;
+				padding: 10px;
+			}
+
+			label {
+				display: block;
+				margin-bottom: 5px;
+				font-weight: bold;
+			}
+
+			input[type="date"] {
+				width: 100%;
+				padding: 5px;
+				margin-bottom: 10px;
+			}
+
+			input[type="checkbox"] {
+				margin-right: 5px;
+			}
+
+			h2 {
+				font-size: 20px;
+				font-weight: bold;
+				text-align: center;
+			}
+		</style>
 	</head>
 	<body>
-		<b>Wiki Date Lock</b>
+		<h2>Wiki Date Lock</h2>
+		<label for="date">Date:</label>
 		<input type="date" id="my-date-field">
+
+		<label>
+			<input type="checkbox" id="enable-checkbox" name="enabled">
+			Enabled
+		</label>
+
+		<p>If enabled, all wiki pages will be displayed as they were on this date.</p>
+
 		<script src="popup.js"></script>
 	</body>
 </html>
