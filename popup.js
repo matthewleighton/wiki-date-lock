@@ -17,11 +17,32 @@ popupDateField.addEventListener('change', () => {
 	chrome.storage.sync.set({ 'selectedDate': selectedDate });
 });
 
+
+
 // Add a listener to the checkbox to get its value when it changes
 popupEnableCheckbox.addEventListener('change', () => {
-	// let lockEnabled = document.querySelector('#enable-checkbox:checked').value;
-
-	var isChecked = popupEnableCheckbox.checked;
-	console.log(isChecked);
-	chrome.storage.sync.set({ 'lockEnabled': isChecked });
+	chrome.storage.sync.set({ 'lockEnabled': popupEnableCheckbox.checked });
+	reloadCurrentTab(popupEnableCheckbox.checked);
 });
+
+function reloadCurrentTab(lockEnabled=false) {
+
+	// Get the current tab and reload it.
+	chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+		currentUrl = tabs[0].url;
+
+		// If the current tab is not a wiki page, don't do anything.
+		if (!isWiki(currentUrl)) {
+			return;
+		}
+
+		if (!lockEnabled) {
+			targetUrl = getLivePageUrl(currentUrl);
+			targetUrl = removeQueryParam(targetUrl, 'wiki_date_lock_redirected');
+		} else {
+			targetUrl = currentUrl;
+		}
+
+		chrome.tabs.update(tabs[0].id, { url: targetUrl });
+	});
+}

@@ -24,6 +24,8 @@ function handleWikipedia(selectedDate) {
 	const apiUrl = "https://en.wikipedia.org/w/api.php";
 	const queryUrl = `${apiUrl}?action=query&format=json&prop=revisions&titles=${title}&rvstart=${formattedSelectedDate}`
 
+	console.log(queryUrl);
+
 	fetch(queryUrl)
 		.then((response) => response.json())
 		.then((data) => {
@@ -240,7 +242,6 @@ function main() {
 		const selectedDate = results.selectedDate;
 		const lockEnabled = results.lockEnabled;
 		
-
 		// If the lock is not enabled, or a date hasn't been selected, don't do anything.
 		if (!selectedDate || !lockEnabled) {
 			return
@@ -253,11 +254,9 @@ function main() {
 		}
 	});
 	
-
 	
 	
 }
-
 
 main();
 
