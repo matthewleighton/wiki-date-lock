@@ -1,6 +1,3 @@
-const wikipediaRegex = /^https?:\/\/([a-z]+\.)?wikipedia\.org/i;
-const fandomRegex = /^https?:\/\/([a-z]+\.)?fandom\.com/i;
-
 function handleWikipedia(selectedDate) {
 	var title = getPageTitle();
 
@@ -79,18 +76,6 @@ function isAlreadyOldWiki() {
 	return oldWikiRegex.test(window.location.href);
 }
 
-// Get the query params from the URL.
-function getQueryParams() {
-	const params = {};
-	const queryString = window.location.search.substring(1);
-	const queryArray = queryString.split("&");
-	for (let i = 0; i < queryArray.length; i++) {
-		const param = queryArray[i].split("=");
-		params[param[0]] = param[1];
-	}
-	return params;
-}
-
 // Add a message explaining why the user was redirected.
 function handleLandOnOldWiki(title, date) {
 	var queryParams = getQueryParams();
@@ -104,6 +89,7 @@ function handleLandOnOldWiki(title, date) {
 	window.addEventListener('load', (event) => {
 		const divElement = document.getElementById('mw-content-subtitle');
 	
+		// The wiki_date_lock_prevent_redirect query param prevents the user from being redirected again.
 		var backUrl = `https://en.wikipedia.org/w/index.php?title=${title}&wiki_date_lock_prevent_redirect=true`;
 		var humanReadableDate = getHumanReadableDate(date);
 
@@ -115,7 +101,6 @@ function handleLandOnOldWiki(title, date) {
 		var message2 = `You were redirected here from the <a href="${backUrl}">latest version</a> of this page by the <i>Wiki Date Lock</i> extension.`;
 		newElement2.innerHTML = "<b style='color:red;'>" + message2 + "</b>";
 
-	
 		divElement.prepend(newElement1);
 		divElement.prepend(newElement2);
 	});
@@ -184,10 +169,7 @@ function handleFandom(selectedDate) {
 
 	// If the user is already on an old revision, don't do anything.
 	if (isAlreadyOldWiki()) {
-		// alert('already on old page.')
 		return handleLandOnOldWiki(title, selectedDate);
-	} else {
-		// alert('Not on old page');
 	}
 
 	// On some pages (like the main page), we don't want to redirect.
@@ -205,25 +187,18 @@ function handleFandom(selectedDate) {
 		.then(html => {
 			const parser = new DOMParser();
 			const doc = parser.parseFromString(html, 'text/html');
-			console.log(doc);
-			// const element = doc.querySelector('.mw-tag-visualeditor');
 			const parent = doc.querySelector('#pagehistory');
 			const element = parent.querySelector('li');
 			const revisionId = element.getAttribute('data-mw-revid');
 
-			// alert('redirecting to revision ' + revisionId);
 			window.location.href = document.location.href + '?oldid=' + revisionId;
 		})
 		.catch((error) => {
 			console.log(error);
 		});
-
-
-
 }
 
 function main() {
-	
 	const promise = new Promise((resolve, reject) => {
 		chrome.storage.sync.get('selectedDate', (result1) => {
 			chrome.storage.sync.get('lockEnabled', (result2) => {
@@ -252,11 +227,7 @@ function main() {
 		} else if (fandomRegex.test(window.location.href)) {
 			handleFandom(selectedDate);
 		}
-	});
-	
-	
-	
+	});	
 }
 
 main();
-

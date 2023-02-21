@@ -1,11 +1,10 @@
+const wikipediaRegex = /^https?:\/\/([a-z]+\.)?wikipedia\.org/i;
+const fandomRegex = /^https?:\/\/([a-z]+\.)?fandom\.com/i;
+
 // Return true if the given URL is a wiki page.
 function isWiki(url) {
-	const wikipediaRegex = /^https?:\/\/([a-z]+\.)?wikipedia\.org/i;
-	const fandomRegex = /^https?:\/\/([a-z]+\.)?fandom\.com/i;
-
 	return wikipediaRegex.test(url) || fandomRegex.test(url);
 }
-
 
 // Given the URL for a wiki page, return the URL for the live version of that page.
 function getLivePageUrl(currentUrl) {
@@ -14,8 +13,7 @@ function getLivePageUrl(currentUrl) {
   return liveUrl;
 }
 
-
-
+// Remove a particular query param from the URL.
 function removeQueryParam(url, param) {
 	var urlparts = url.split('?');   // split the URL into two parts: the base URL and the query string
 	if (urlparts.length >= 2) {
@@ -33,4 +31,16 @@ function removeQueryParam(url, param) {
 	} else {
 		return url;
 	}
+}
+
+// Get the query params from the URL.
+function getQueryParams() {
+	const params = {};
+	const queryString = window.location.search.substring(1);
+	const queryArray = queryString.split("&");
+	for (let i = 0; i < queryArray.length; i++) {
+		const param = queryArray[i].split("=");
+		params[param[0]] = param[1];
+	}
+	return params;
 }
